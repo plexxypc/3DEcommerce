@@ -1,11 +1,16 @@
 "use client";
+
 import { useBag } from "@/lib/bag";
-import { products } from "@/data/products";
+import { useEffect, useState } from "react";
+import type { Product } from "@/data/products";
 import { formatNaira } from "@/lib/money";
 import Link from "next/link";
 
 export default function BagPage() {
   const { lines, remove } = useBag();
+  const [products, setProducts] = useState<Product[] | null>(null);
+  useEffect(() => { fetch("/api/products").then((r) => r.json()).then(setProducts).catch(() => setProducts([])); }, []);
+  if (!products) return <p className="muted">Loading your bag…</p>;
   const rows = lines.flatMap((l) => { const p = products.find((x) => x.slug === l.slug); return p ? [{ p, qty: l.qty }] : []; });
   const total = rows.reduce((n, r) => n + r.p.priceKobo * r.qty, 0);
   if (!rows.length) return (<><h1>Your bag</h1><p className="muted">Nothing here yet.</p><Link className="btn" href="/shop">Browse the shop</Link></>);

@@ -9,7 +9,7 @@ export function AddToBag({ slug, stock }: { slug: string; stock: number }) {
   return (
     <>
       <button className="btn primary" onClick={() => {
-        const r = add(slug);
+        const r = add(slug, stock);
         setMsg(r === "added" ? "Added to bag" : "Already in your bag. This piece is one of one.");
       }}>Add to bag</button>
       <span role="status" className="muted">{msg}</span>

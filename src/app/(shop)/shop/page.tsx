@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { products } from "@/data/products";
+import { listProducts } from "@/lib/store";
 import { availability, formatNaira } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Shop" };
+export const dynamic = "force-dynamic";
 
-export default function Shop() {
+export default async function Shop() {
+  const products = await listProducts();
   return (
     <>
       <h1>Shop</h1>

@@ -1,9 +1,8 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { products } from "@/data/products";
 
 type Line = { slug: string; qty: number };
-type BagCtx = { lines: Line[]; count: number; add: (slug: string) => "added" | "max" | "sold"; remove: (slug: string) => void; clear: () => void };
+type BagCtx = { lines: Line[]; count: number; add: (slug: string, stock: number) => "added" | "max" | "sold"; remove: (slug: string) => void; clear: () => void };
 const Ctx = createContext<BagCtx | null>(null);
 const KEY = "bag.v1";
 
@@ -14,11 +13,10 @@ export function BagProvider({ children }: { children: ReactNode }) {
   }, []);
   const persist = (next: Line[]) => { setLines(next); try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {} };
 
-  const add = useCallback((slug: string) => {
-    const p = products.find((x) => x.slug === slug);
-    if (!p || p.stock <= 0) return "sold" as const;
+  const add = useCallback((slug: string, stock: number) => {
+    if (stock <= 0) return "sold" as const;
     const cur = lines.find((l) => l.slug === slug)?.qty ?? 0;
-    if (cur >= p.stock) return "max" as const; // one-of-one: can't add twice
+    if (cur >= stock) return "max" as const; // one-of-one: can't add twice
     persist(cur ? lines.map((l) => (l.slug === slug ? { ...l, qty: cur + 1 } : l)) : [...lines, { slug, qty: 1 }]);
     return "added" as const;
   }, [lines]);

@@ -1,6 +1,7 @@
-// PLACEHOLDER catalogue for the prototype. Replaced by DB + admin uploads.
+// Seed catalogue (placeholders). Live data comes from src/lib/store.ts and the admin page.
 // Prices are stored in kobo (minor units) to avoid float errors.
-export type Category = "caps" | "footwear" | "outerwear" | "jewellery" | "tees";
+export const categories = ["caps", "footwear", "outerwear", "jewellery", "tees"] as const;
+export type Category = (typeof categories)[number];
 
 export type Product = {
   slug: string;
@@ -23,4 +24,3 @@ export const products: Product[] = [
   { slug: "crt-portrait-print", name: "CRT Portrait Print", category: "tees", priceKobo: 1500000, stock: 0, image: "/products/crt-portrait-print.svg", alt: "Print of a portrait holding a CRT television", story: "Editorial print. This one has found its home.", sizeNote: "A3, 29.7 x 42 cm" },
 ];
 
-export const getProduct = (slug: string) => products.find((p) => p.slug === slug);

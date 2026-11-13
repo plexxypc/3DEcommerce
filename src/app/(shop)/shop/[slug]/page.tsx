@@ -1,20 +1,20 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getProduct, products } from "@/data/products";
+import { getProduct } from "@/lib/store";
 import { availability, formatNaira, whatsappLink } from "@/lib/money";
 import { brand } from "@/brand/adelana";
 import { AddToBag } from "@/components/AddToBag";
 
 type Props = { params: Promise<{ slug: string }> };
-export const generateStaticParams = () => products.map((p) => ({ slug: p.slug }));
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const p = getProduct((await params).slug);
+  const p = await getProduct((await params).slug);
   return p ? { title: p.name, description: p.story, openGraph: { images: [p.image] } } : {};
 }
 
 export default async function ProductPage({ params }: Props) {
-  const p = getProduct((await params).slug);
+  const p = await getProduct((await params).slug);
   if (!p) notFound();
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: p.name, description: p.story, image: p.image,

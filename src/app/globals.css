@@ -36,3 +36,4 @@ table.bag{width:100%;border-collapse:collapse}table.bag td,table.bag th{padding:
 @media(max-width:799px){.sheet{left:0;right:0;bottom:0;border-radius:14px 14px 0 0;max-height:62vh;overflow:auto}}
 @media(min-width:800px){.sheet{top:72px;right:24px;width:360px}}
 .loadbar{height:2px;background:var(--line);width:220px;margin:0 auto}.loadbar i{display:block;height:100%;background:var(--gold);transition:width .2s}
+.field{min-height:44px;padding:8px 10px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:2px;font:inherit;width:100%}

@@ -37,3 +37,4 @@ table.bag{width:100%;border-collapse:collapse}table.bag td,table.bag th{padding:
 @media(min-width:800px){.sheet{top:72px;right:24px;width:360px}}
 .loadbar{height:2px;background:var(--line);width:220px;margin:0 auto}.loadbar i{display:block;height:100%;background:var(--gold);transition:width .2s}
 .field{min-height:44px;padding:8px 10px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:2px;font:inherit;width:100%}
+.studio::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at 50% 48%,transparent 52%,rgba(0,0,0,.6) 100%)}

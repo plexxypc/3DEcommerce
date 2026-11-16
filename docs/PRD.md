@@ -1,9 +1,10 @@
 # PRD: adelana 3D Store
 
-Status: Draft v0.1 · 13 November 2026 · Owner: princeserox
+Status: Draft v0.2 · 13 November 2026 · Owner: princeserox
+Purpose: **pitch prototype / reusable template** for pitching 3D shops to different brands. adelana is the first demo brand; no live commerce is required for the prototype.
 Brand reference: instagram.com/adelanaaaaaaaa (adeLAna, "Creative Director · Image / Products / Design")
 
-> **Evidence base and gaps.** This draft is built from one screen recording of the brand's Instagram profile and a screenshot of it. The ZIP of reference videos described in the brief did **not** arrive (only one MP4 was uploaded). Every section tagged **[ASSUMED]** must be checked against those videos. Section 13 lists the questions that need answers before development starts.
+> **Evidence base and gaps.** v0.1 was built from a screen recording of the brand's Instagram profile. v0.2 adds two reference videos from other studios (a dark leather-jacket store walk-through and a sneaker/perfume display wall with tap-to-focus product close-ups, shown on desktop and phone). Frames were reviewed every 2 s; audio and motion between frames were not. Sections tagged **[ASSUMED]** are still unconfirmed. Section 13 records the owner's answers.
 >
 ---
 
@@ -32,7 +33,7 @@ Visitors don't scroll a grid. They walk or fly through a world, pick up a piece,
 - AR try-on of clothing on the body (AR *placement* view for accessories is stretch only).
 - Marketplace for other sellers.
 - Native apps.
-- International shipping and multi-currency (naira first; see Section 13).
+- Real 3D scanning/photogrammetry for the prototype (see Section 10: image-based scenes first).
 
 ## 4. Users
 
@@ -90,8 +91,10 @@ Priority: **P0** = launch blocker, **P1** = launch target, **P2** = later.
 | --- | --- | --- |
 | C1 | Product model supports **unique items (stock = 1)** and multi-quantity items; sold pieces stay visible with a "Sold" state and "Make me one like this" link. | P0 |
 | C2 | Cart/bag with stock reservation (hold 10 min at checkout so two people can't buy the same one-off). | P0 |
-| C3 | Paystack checkout in NGN (cards, transfer, USSD); order confirmed only after webhook verification. | P0 |
-| C4 | Delivery: address capture, Nigerian state/LGA-aware shipping fee table, pickup option **[ASSUMED]**. | P0 |
+| C3 | Paystack checkout in NGN (cards, transfer, USSD) for Nigerian buyers and **Stripe** for international buyers; order confirmed only after verified webhook from either provider. | P0 |
+| C4 | Delivery: address capture, Nigerian state/LGA-aware shipping fee table, **international shipping zones/rates**, pickup option **[ASSUMED]**. Courier and fee rules to be set (placeholder rates in the prototype). | P0 |
+| C10 | Multi-currency display (NGN plus a foreign currency for Stripe buyers); price source of truth stays per product. | P1 |
+| C11 | Returns and custom-made policy shown at checkout and on the Shipping & Returns page (owner says this is important; text to be drafted and approved). | P0 |
 | C5 | Order emails and WhatsApp-friendly order summary. | P1 |
 | C6 | Commission request form with image upload, optional deposit. | P1 |
 | C7 | Drop scheduling: items hidden until a release time; countdown; reminder sign-up. | P1 |
@@ -117,7 +120,7 @@ Home/Studio, Shop (fallback grid), Product pages (real URLs, indexable, share ca
 | **First paint** | Brand poster + Enter button within 2 s on 4G (Lighthouse "Slow 4G" profile). |
 | **Initial download** | ≤ 1.5 MB before the scene starts; ≤ 4 MB to reach interactive hub on a phone. |
 | **Per-product model** | ≤ 1.5 MB (mobile tier) with ≤ 50k triangles and ≤ 2k px textures in KTX2/WebP. A 4k "detail" tier loads only on focus, on capable devices. |
-| **Frame rate** | ≥ 30 fps on a reference mid-range Android (define device in Section 13); ≥ 60 fps desktop. Dynamic resolution scaling below 30 fps. |
+| **Frame rate** | ≥ 30 fps on the reference device, **iPhone 11 (iOS 16+)**, plus a low-end Android check per CLAUDE.md; ≥ 60 fps desktop. Dynamic resolution scaling below 30 fps. |
 | **Memory** | Dispose of off-screen products; stay under ~300 MB GPU on mobile. |
 | **Core Web Vitals** | LCP ≤ 2.5 s (poster), INP ≤ 200 ms, CLS ≤ 0.1. |
 | **Accessibility** | Full keyboard path; focus-visible; reduced-motion = fallback mode; text/controls meet WCAG AA contrast; every product has alt text and a plain-text description; the 3D canvas is never the only way to buy. |
@@ -137,7 +140,8 @@ Home/Studio, Shop (fallback grid), Product pages (real URLs, indexable, share ca
 | Database | MySQL + Drizzle ORM (or the owner's preference) | Reuse known setup |
 | Payments | Paystack (NGN) | Local methods, webhook model |
 | Auth | Admin only: Auth.js; customers guest | Less friction |
-| Hosting | Hostinger Node.js app **[ASSUMED]**; heavy assets on R2/CDN, never inside the app directory | Matches existing decisions. Revisit if serverless/edge is needed |
+| Hosting | Develop and test locally; prototype on **Vercel**; Hostinger Node.js is the later target. Heavy assets on R2/CDN, never inside the app directory | Vercel is serverless, so stock reservation and webhooks must not depend on in-process state |
+| Payments (intl) | Stripe alongside Paystack | International buyers; same webhook-confirmation rule |
 | Analytics | Privacy-friendly (Plausible/PostHog) + custom 3D events | Measure 3D vs fallback conversion |
 
 Key architecture rules (detail in the skills):
@@ -148,7 +152,9 @@ Key architecture rules (detail in the skills):
 
 ## 10. 3D asset pipeline (summary)
 
-Each piece is unique and handmade, so assets are captured per item:
+**Prototype decision (owner, 13 Nov 2026): image-based first.** The scene and products are built from AI-generated or photographed images (rooms as backdrops, products as image cards or depth-mapped planes) rather than scanned 3D models, as in the reference videos. This is faster and needs no budget. The admin upload takes product images first; GLB upload stays supported for later. The scan pipeline below is the upgrade path for real client work, not a prototype requirement.
+
+Each piece is unique and handmade, so assets are captured per item (upgrade path):
 
 1. **Capture:** turntable photography (60 to 120 frames, hard-flash and soft-box sets) or photogrammetry/Gaussian-splat scan; phone LiDAR for rough form.
 2. **Reconstruct and clean:** photogrammetry (RealityCapture/Meshroom/Polycam/Luma) → clean in Blender; retopologise.
@@ -185,18 +191,26 @@ Reflective gold and shiny sequins are the hardest case for scans. Plan to hand-p
 
 Dates are not committed until Section 13 is answered. 3D asset production (scanning 12 to 20 pieces) is the most likely schedule risk.
 
-## 13. Open questions (need the owner)
+## 13. Decisions and remaining questions
 
-1. **Reference videos:** please re-send the ZIP. Which specific behaviours do you want (camera movement, product interaction, transitions, sound)?
-2. **Who is the owner of the brand/site?** Is this the brand owner's own project or a commission? Do they have approved logo files, fonts and colours?
-3. **Catalogue size at launch** and how often new pieces drop. Are all pieces one-of-one?
-4. **Shipping:** Lagos-only at launch, nationwide, or international? Who is the courier? Fee rules?
-5. **Domain and hosting:** is the site meant to live on Hostinger like LesMemora, or elsewhere? Existing domain?
-6. **Who produces 3D models?** Brand owner scanning in-house, a 3D artist, or a mix? Budget per model?
-7. **Reference device** for performance testing (which phone does the audience actually use?).
-8. **Keep the WhatsApp catalogue** as a parallel channel? (Recommended: yes, with deep links from the site.)
-9. **Returns and custom-made policy** (affects checkout copy and legal pages).
-10. **Budget and deadline**, including any launch date or drop to anchor to.
+### Answered by the owner (13 Nov 2026)
+1. **Reference videos:** wants all the behaviours shown: guided walk-through of a themed space, tap-to-focus on a product, close-up detail view with a text/buy panel, same experience on phone. *Open:* any behaviour beyond this reading (sound, specific transitions)? Not yet confirmed.
+2. **Ownership/brand assets:** none yet. This is a **pitch prototype** for different brands; adelana is the first demo. So theming (colours, type, logo, scene, catalogue) must be per-brand config.
+3. **Catalogue:** accommodate as many pieces as possible; an **admin page for uploads** is required.
+4. **Shipping:** local and international. Courier and fee rules to be defined (placeholders in the prototype).
+5. **Hosting:** Hostinger eventually; test locally first, prototype on **Vercel**.
+6. **3D production budget:** none. Prototype is **image-based** (AI-generated/photographed), not scanned (Section 10).
+7. **Reference device:** **iPhone 11 and up.**
+8. **WhatsApp catalogue:** keep as a parallel channel, with deep links.
+9. **Returns and custom-made policy:** important; drafted and shown at checkout (C11).
+10. **Deadline:** as soon as possible, so the plan favours the smallest vertical slice first.
+11. **Payments:** Paystack (NGN) and Stripe (international) side by side.
+
+### Still open
+- Any further behaviours from the reference videos (sound, transitions)?
+- International courier, rates and currencies to show with Stripe.
+- Approved policy text for returns and custom-made pieces.
+- Which brand or demo catalogue to show first beyond adelana (needed for the template pitch).
 
 ## 14. Risks
 
